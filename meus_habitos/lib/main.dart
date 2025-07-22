@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: false,
         home: const MyHomePage(title: 'Meus Hábitos'),
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -50,54 +50,119 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late PageController _pagecontroler;
+  int currentIndex = 1;
+  void onTabChange(index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _pagecontroler = PageController(initialPage: 1);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _pagecontroler.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(
-          activeColor: AppColors.select,
-          backgroundColor: AppColors.hearderBackground,
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-                icon: Icon(Icons.add, size: 20), label: AppLocalizations.of(context)!.addTab),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.list, size: 20), label: AppLocalizations.of(context)!.today),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.school, size: 20),
-              label: AppLocalizations.of(context)!.courses,
-            )
-          ]),
-      tabBuilder: (context, index) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              children: [
-                Expanded(child: _buildTab(index)),
-              ],
-            );
-          },
-        );
-      },
+    return Scaffold(
+      bottomNavigationBar: _buildBottom(),
+      // bottomNavigationBar: CupertinoTabBar(
+      //     activeColor: AppColors.select,
+      //     currentIndex: currentIndex,
+      //     backgroundColor: AppColors.hearderBackground,
+      //     items: <BottomNavigationBarItem>[
+      //       BottomNavigationBarItem(
+      //           icon: Icon(Icons.add, size: 20),
+      //           label: AppLocalizations.of(context)!.addTab),
+      //       BottomNavigationBarItem(
+      //           icon: Icon(Icons.list, size: 20),
+      //           label: AppLocalizations.of(context)!.today),
+      //       BottomNavigationBarItem(
+      //         icon: Icon(Icons.school, size: 20),
+      //         label: AppLocalizations.of(context)!.courses,
+      //       )
+      //     ]),
+      body: _buildTab(),
     );
   }
 
-  Widget _buildTab(int index) {
-    switch (index) {
-      case 0:
-        return Container(
+  Widget _buildBottom() {
+    return Container(
+      decoration: BoxDecoration(color: AppColors.hearderBackground),
+      height: 70,
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsetsGeometry.all(10),
+            child: Row(
+              children: [
+                for (var i = 0; i < 3; i++)
+                  Expanded(
+                    child: _buildItemNavBar(
+                        icon: [Icons.add, Icons.list, Icons.school][i],
+                        label: [
+                          AppLocalizations.of(context)!.addTab,
+                          AppLocalizations.of(context)!.today,
+                          AppLocalizations.of(context)!.courses,
+                        ][i],
+                        index: i),
+                  ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab() {
+    return PageView(
+      controller: _pagecontroler,
+
+      onPageChanged: (value) {
+        onTabChange(value);
+      },
+      children: [
+        Container(
           child: Addjobs(),
-        );
-      case 1:
-        return Container(
+        ),
+        Container(
           child: Todayjobs(),
-        );
-      case 2:
-        return Container(
+        ),
+        Container(
           child: Coursesscreen(),
-        );
-      default:
-        return Container(
-          child: Todayjobs(),
-        );
-    }
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemNavBar(
+      {required IconData icon, required String label, required int index}) {
+    final bool isSelected = (index == currentIndex);
+    return GestureDetector(
+      onTap: () {
+        currentIndex = index;
+
+      },
+      child: Column(
+        children: [
+          Icon(icon, color: isSelected ? AppColors.select : AppColors.label,),
+          SizedBox(
+            height: 2,
+          ),
+          Text(label, style: TextStyle(color: isSelected ? AppColors.select : AppColors.label,),)
+        ],
+      ),
+    );
   }
 }
